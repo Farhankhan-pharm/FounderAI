@@ -1,0 +1,6 @@
+{
+  "name": "FounderAI - Startup Intelligence & Research Engine",
+  "description": "Evidence-backed AI research engine, market analysis, competitor intelligence, and continuous founder mentorship platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

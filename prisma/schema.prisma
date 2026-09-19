@@ -1,0 +1,247 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum ProjectStage {
+  IDEA
+  PROBLEM_VALIDATION
+  SOLUTION_DESIGN
+  MVP_BUILDING
+  EARLY_TRACTION
+  SCALING
+}
+
+enum EvidenceType {
+  VERIFIED
+  SOURCE_BACKED
+  MODEL_INFERENCE
+  HYPOTHESIS
+  UNKNOWN
+}
+
+enum SourceType {
+  GOVERNMENT
+  OFFICIAL_COMPANY
+  ACADEMIC
+  MAJOR_PUBLICATION
+  INDUSTRY_REPORT
+  REVIEW_PLATFORM
+  COMMUNITY_FORUM
+  BLOG
+  UNKNOWN
+}
+
+enum ExperimentPriority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ExperimentStatus {
+  PROPOSED
+  IN_PROGRESS
+  COMPLETED
+  VALIDATED
+  INVALIDATED
+}
+
+enum JobStatus {
+  QUEUED
+  RESEARCHING
+  ANALYZING
+  SYNTHESIZING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id               String           @id @default(uuid())
+  email            String           @unique
+  name             String
+  subscriptionTier SubscriptionTier @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  projects         StartupProject[]
+}
+
+model StartupProject {
+  id             String            @id @default(uuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String
+  description    String
+  industry       String
+  targetMarket   String
+  targetCustomer String
+  geography      String
+  businessModel  String
+  budget         String
+  stage          ProjectStage      @default(IDEA)
+  status         String            @default("ACTIVE")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  lastResearchAt DateTime?
+  analyses       StartupAnalysis[]
+  sources        ResearchSource[]
+  competitors    Competitor[]
+  personas       CustomerPersona[]
+  marketGaps     MarketGap[]
+  experiments    Experiment[]
+  roadmapItems   RoadmapItem[]
+  chatMessages   ChatMessage[]
+  analysisJobs   AnalysisJob[]
+}
+
+model StartupAnalysis {
+  id               String           @id @default(uuid())
+  projectId        String
+  project          StartupProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  version          Int              @default(1)
+  overallScore     Float
+  confidence       Float
+  executiveSummary String
+  marketAnalysis   Json
+  customerAnalysis Json
+  competitorAnalysis Json
+  gapAnalysis      Json
+  businessModel    Json
+  mvp              Json
+  goToMarket       Json
+  risks            Json
+  assumptions      Json
+  recommendation   Json
+  createdAt        DateTime         @default(now())
+  sources          ResearchSource[]
+  evidences        Evidence[]
+}
+
+model ResearchSource {
+  id              String           @id @default(uuid())
+  projectId       String
+  project         StartupProject   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  analysisId      String?
+  analysis        StartupAnalysis? @relation(fields: [analysisId], references: [id], onDelete: SetNull)
+  url             String
+  title           String
+  domain          String
+  sourceType      SourceType       @default(UNKNOWN)
+  publicationDate DateTime?
+  retrievedAt     DateTime         @default(now())
+  credibility     Float            // 0.0 - 1.0 heuristic score
+  content         String?
+  summary         String
+  createdAt       DateTime         @default(now())
+  evidences       Evidence[]
+}
+
+model Evidence {
+  id             String           @id @default(uuid())
+  analysisId     String
+  analysis       StartupAnalysis  @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  claim          String
+  sourceId       String?
+  source         ResearchSource?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  evidenceType   EvidenceType     @default(UNKNOWN)
+  confidence     Float
+  supportingText String
+  createdAt      DateTime         @default(now())
+}
+
+model Competitor {
+  id             String         @id @default(uuid())
+  projectId      String
+  project        StartupProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name           String
+  website        String
+  description    String
+  targetCustomer String
+  pricing        String
+  strengths      String[]
+  weaknesses     String[]
+  sourceIds      String[]
+  createdAt      DateTime       @default(now())
+}
+
+model CustomerPersona {
+  id               String         @id @default(uuid())
+  projectId        String
+  project          StartupProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name             String
+  description      String
+  painPoints       String[]
+  buyingTriggers   String[]
+  objections       String[]
+  willingnessToPay String
+  createdAt        DateTime       @default(now())
+}
+
+model MarketGap {
+  id               String         @id @default(uuid())
+  projectId        String
+  project          StartupProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title            String
+  description      String
+  evidence         String[]
+  opportunityScore Float
+  confidence       Float
+  createdAt        DateTime       @default(now())
+}
+
+model Experiment {
+  id              String             @id @default(uuid())
+  projectId       String
+  project         StartupProject     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  hypothesis      String
+  experiment      String
+  successCriteria String[]
+  failureCriteria String[]
+  priority        ExperimentPriority @default(HIGH)
+  status          ExperimentStatus   @default(PROPOSED)
+  createdAt       DateTime           @default(now())
+}
+
+model RoadmapItem {
+  id                String         @id @default(uuid())
+  projectId         String
+  project           StartupProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title             String
+  description       String
+  phase             String
+  priority          String
+  status            String
+  estimatedDuration String
+  createdAt         DateTime       @default(now())
+}
+
+model ChatMessage {
+  id        String         @id @default(uuid())
+  projectId String
+  project   StartupProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime       @default(now())
+}
+
+model AnalysisJob {
+  id               String         @id @default(uuid())
+  projectId        String
+  project          StartupProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status           JobStatus      @default(QUEUED)
+  progressPercent  Int            @default(0)
+  currentStep      String         @default("QUEUED")
+  stepsCompleted   String[]
+  error            String?
+  createdAt        DateTime       @default(now())
+  completedAt      DateTime?
+}

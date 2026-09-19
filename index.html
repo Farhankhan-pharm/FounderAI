@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function() {
+        try {
+          var _fn = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+          Object.defineProperty(window, 'fetch', {
+            get: function() {
+              return _fn;
+            },
+            set: function(val) {
+              _fn = val;
+            },
+            configurable: true,
+            enumerable: true,
+          });
+        } catch (e) {
+          // Fallback if property definition is blocked
+        }
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FounderAI - Startup Intelligence & Research Engine</title>
+    <meta name="description" content="Evidence-backed AI research engine, market analysis, competitor intelligence, and continuous founder mentorship platform." />
+    <meta property="og:title" content="FounderAI - Startup Intelligence & Research Engine" />
+    <meta property="og:description" content="Evidence-backed AI research engine, market analysis, competitor intelligence, and continuous founder mentorship platform." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
